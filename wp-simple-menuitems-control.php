@@ -33,25 +33,24 @@ function wp_simple_menuitems_control_add_visibility_field($item_id, $item, $dept
 	?>
 	<p class="field-visibility description description-wide">
 		<label>
-			<?php esc_html_e('Visibility', 'wp-simple-menuitems-control'); ?>
-			<br>
-			<input type="radio" class="wp-simple-menuitems-control-visibility-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="always" <?php checked($visibility, 'always'); ?>> Always display<br>
-			<input type="radio" class="wp-simple-menuitems-control-visibility-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="logged-out" <?php checked($visibility, 'logged-out'); ?>> Displays for Logged-out users only<br>
+			<?php esc_html_e('Visibility', 'wp-simple-menuitems-control'); ?><br />
+			<input type="radio" class="wp-simple-menuitems-control-visibility-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="always" <?php checked($visibility, 'always'); ?>> Always display<br />
+			<input type="radio" class="wp-simple-menuitems-control-visibility-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="logged-out" <?php checked($visibility, 'logged-out'); ?>> Displays for Logged-out users only<br />
 			<input type="radio" class="wp-simple-menuitems-control-visibility-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="logged-in" <?php checked($visibility, 'logged-in'); ?>> Displays for Logged-in users only
 		</label>
 	</p>
 	<div class="wp-simple-menuitems-control-roles-groups-<?php echo $item_id; ?>" <?php echo ($visibility === 'logged-in') ? '' : 'style="display:none;"'; ?>>
 		<p class="field-roles description">
-			<?php esc_html_e('Select Roles:', 'wp-simple-menuitems-control'); ?><br>
+			<?php esc_html_e('Select Roles:', 'wp-simple-menuitems-control'); ?><br />
 			<?php foreach ($all_roles as $role_key => $role) : ?>
-				<input type="checkbox" class="wp-simple-menuitems-control-role-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-roles[<?php echo $item_id; ?>][]" value="<?php echo esc_attr($role_key); ?>" <?php checked(in_array($role_key, $roles)); ?>> <?php echo esc_html($role['name']); ?><br>
+				<input type="checkbox" class="wp-simple-menuitems-control-role-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-roles[<?php echo $item_id; ?>][]" value="<?php echo esc_attr($role_key); ?>" <?php checked(in_array($role_key, $roles)); ?>> <?php echo esc_html($role['name']); ?><br />
 			<?php endforeach; ?>
 		</p>
 		<?php if (!empty($all_groups)) : ?>
 			<p class="field-groups description">
-				<?php esc_html_e('Select Groups:', 'wp-simple-menuitems-control'); ?><br>
+				<?php esc_html_e('Select Groups:', 'wp-simple-menuitems-control'); ?><br />
 				<?php foreach ($all_groups as $group) : ?>
-					<input type="checkbox" class="wp-simple-menuitems-control-group-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-groups[<?php echo $item_id; ?>][]" value="<?php echo esc_attr($group['id']); ?>" <?php checked(in_array($group['id'], $groups)); ?>> <?php echo esc_html($group['name']); ?><br>
+					<input type="checkbox" class="wp-simple-menuitems-control-group-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-groups[<?php echo $item_id; ?>][]" value="<?php echo esc_attr($group['id']); ?>" <?php checked(in_array($group['id'], $groups)); ?>> <?php echo esc_html($group['name']); ?><br />
 				<?php endforeach; ?>
 			</p>
 		<?php endif; ?>
@@ -124,10 +123,8 @@ function wp_simple_menuitems_control_filter_menuitems($items, $args) {
 		if ($visibility === 'logged-in' && !empty($roles) && !array_intersect(wp_get_current_user()->roles, $roles)) {
 			unset($items[$key]);
 		}
-		if ($visibility === 'logged-in' && function_exists('bp_is_active') && bp_is_active('groups') && !empty($groups)) {
-			if (!wp_simple_menuitems_control_user_in_groups($groups)) {
-				unset($items[$key]);
-			}
+		if ($visibility === 'logged-in' && function_exists('bp_is_active') && bp_is_active('groups') && !empty($groups) && !array_intersect(groups_get_user_groups(get_current_user_id())['groups'], $groups)) {
+			unset($items[$key]);
 		}
 	}
 	return $items;
@@ -147,15 +144,6 @@ function wp_simple_menuitems_control_get_groups() {
 		}
 	}
 	return $groups;
-}
-
-// Check whether current user belongs to groups
-function wp_simple_menuitems_control_user_in_groups($groups) {
-	if (!function_exists('bp_get_user_groups')) {
-		return false;
-	}
-	$user_groups = bp_get_user_groups(get_current_user_id());
-	return !empty(array_intersect(array_keys($user_groups), $groups));
 }
 
 // Page for deactivation
