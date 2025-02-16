@@ -23,6 +23,7 @@ if (!defined('ABSPATH')) {
 // Add visibility field to menuitems
 function wp_simple_menuitems_control_add_visibility_field($item_id, $item, $depth, $args) {
     $visibility = get_post_meta($item_id, '_wp_simple_menuitems_control_visibility', true);
+	if (empty($visibility)) $visibility = 'always';
     $roles = get_post_meta($item_id, '_wp_simple_menuitems_control_roles', true);
     $groups = get_post_meta($item_id, '_wp_simple_menuitems_control_groups', true);
     if (!is_array($roles)) $roles = [];
@@ -34,41 +35,52 @@ function wp_simple_menuitems_control_add_visibility_field($item_id, $item, $dept
         <label>
             <?php esc_html_e('Visibility', 'wp-simple-menuitems-control'); ?>
             <br>
-            <input type="radio" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="always" <?php checked($visibility, 'always'); ?>> Always display<br>
-            <input type="radio" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="logged-out" <?php checked($visibility, 'logged-out'); ?>> Displays for Logged-out users only<br>
-            <input type="radio" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="logged-in" <?php checked($visibility, 'logged-in'); ?>> Displays for Logged-in users only
+            <input type="radio" class="wp-simple-menuitems-control-visibility-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="always" <?php checked($visibility, 'always'); ?>> Always display<br>
+            <input type="radio" class="wp-simple-menuitems-control-visibility-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="logged-out" <?php checked($visibility, 'logged-out'); ?>> Displays for Logged-out users only<br>
+            <input type="radio" class="wp-simple-menuitems-control-visibility-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-visibility[<?php echo $item_id; ?>]" value="logged-in" <?php checked($visibility, 'logged-in'); ?>> Displays for Logged-in users only
         </label>
     </p>
-    <div class="wp-simple-menuitems-control-roles-groups" <?php echo ($visibility === 'logged-in') ? '' : 'style="display:none;"'; ?>>
+    <div class="wp-simple-menuitems-control-roles-groups-<?php echo $item_id; ?>" <?php echo ($visibility === 'logged-in') ? '' : 'style="display:none;"'; ?>>
         <p class="field-roles description">
-            <strong><?php esc_html_e('Select Roles:', 'wp-simple-menuitems-control'); ?></strong><br>
+            <?php esc_html_e('Select Roles:', 'wp-simple-menuitems-control'); ?><br>
             <?php foreach ($all_roles as $role_key => $role) : ?>
-                <input type="checkbox" class="wp-simple-menuitems-control-role" name="wp-simple-menuitems-control-roles[<?php echo $item_id; ?>][]" value="<?php echo esc_attr($role_key); ?>" <?php checked(in_array($role_key, $roles)); ?>> <?php echo esc_html($role['name']); ?><br>
+                <input type="checkbox" class="wp-simple-menuitems-control-role-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-roles[<?php echo $item_id; ?>][]" value="<?php echo esc_attr($role_key); ?>" <?php checked(in_array($role_key, $roles)); ?>> <?php echo esc_html($role['name']); ?><br>
             <?php endforeach; ?>
         </p>
         <?php if (!empty($all_groups)) : ?>
             <p class="field-groups description">
-                <strong><?php esc_html_e('Select Groups:', 'wp-simple-menuitems-control'); ?></strong><br>
+                <?php esc_html_e('Select Groups:', 'wp-simple-menuitems-control'); ?><br>
                 <?php foreach ($all_groups as $group) : ?>
-                    <input type="checkbox" class="wp-simple-menuitems-control-group" name="wp-simple-menuitems-control-groups[<?php echo $item_id; ?>][]" value="<?php echo esc_attr($group['id']); ?>" <?php checked(in_array($group['id'], $groups)); ?>> <?php echo esc_html($group['name']); ?><br>
+                    <input type="checkbox" class="wp-simple-menuitems-control-group-<?php echo $item_id; ?>" name="wp-simple-menuitems-control-groups[<?php echo $item_id; ?>][]" value="<?php echo esc_attr($group['id']); ?>" <?php checked(in_array($group['id'], $groups)); ?>> <?php echo esc_html($group['name']); ?><br>
                 <?php endforeach; ?>
             </p>
         <?php endif; ?>
     </div>
     <script>
         jQuery(document).ready(function($) {
-            function updateCheckboxState() {
-                let roleChecked = $('.wp-simple-menuitems-control-role:checked').length > 0;
-                let groupChecked = $('.wp-simple-menuitems-control-group:checked').length > 0;
-                if (roleChecked) {
-                    $('.wp-simple-menuitems-control-group').prop('disabled', true);
-                } else if (groupChecked) {
-                    $('.wp-simple-menuitems-control-role').prop('disabled', true);
+			let item_id = "<?php echo $item_id; ?>";
+            function updateRadiobuttonState() {
+                let logeedinChecked = $('.wp-simple-menuitems-control-visibility-' + item_id + ':checked').val() == 'logged-in';
+                if (logeedinChecked) {
+                    $('.wp-simple-menuitems-control-roles-groups-' + item_id).show();
                 } else {
-                    $('.wp-simple-menuitems-control-role, .wp-simple-menuitems-control-group').prop('disabled', false);
+                    $('.wp-simple-menuitems-control-roles-groups-' + item_id).hide();
                 }
             }
-            $('.wp-simple-menuitems-control-role, .wp-simple-menuitems-control-group').on('change', updateCheckboxState);
+            $('.wp-simple-menuitems-control-visibility-' + item_id).on('change', updateRadiobuttonState);
+            updateRadiobuttonState();
+            function updateCheckboxState() {
+                let roleChecked = $('.wp-simple-menuitems-control-role-' + item_id + ':checked').length > 0;
+                let groupChecked = $('.wp-simple-menuitems-control-group-' + item_id + ':checked').length > 0;
+                if (roleChecked) {
+                    $('.wp-simple-menuitems-control-group-' + item_id).prop('disabled', true);
+                } else if (groupChecked) {
+                    $('.wp-simple-menuitems-control-role-' + item_id).prop('disabled', true);
+                } else {
+                    $('.wp-simple-menuitems-control-role-' + item_id + ', .wp-simple-menuitems-control-group-' + item_id).prop('disabled', false);
+                }
+            }
+            $('.wp-simple-menuitems-control-role-' + item_id + ', .wp-simple-menuitems-control-group-' + item_id).on('change', updateCheckboxState);
             updateCheckboxState();
         });
     </script>
