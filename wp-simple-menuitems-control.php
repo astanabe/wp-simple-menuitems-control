@@ -216,6 +216,7 @@ function wp_simple_menuitems_control_uninstall() {
 	if (get_option('wp_simple_menuitems_control_uninstall_settings') === 'remove') {
 		global $wpdb;
 		$wpdb->query("DELETE FROM $wpdb->postmeta WHERE meta_key IN ('_wp_simple_menuitems_control_visibility', '_wp_simple_menuitems_control_roles', '_wp_simple_menuitems_control_groups')");
+		delete_option('wp_simple_menuitems_control_uninstall_settings');
 	}
 }
 register_uninstall_hook(__FILE__, 'wp_simple_menuitems_control_uninstall');
